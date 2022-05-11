@@ -1,21 +1,52 @@
 import React, { useState } from "react";
 import Navbar from "./Navbar";
+import axios from "axios";
+import Swal from "sweetalert2";
+import Wrapper from "./Quill";
 
 const Form = () => {
-  const [state, setState] = useState({ title: "", content: "", authoe: "" });
+  const [state, setState] = useState({ title: "", authoe: "" });
+  const [content, setContent] = useState("");
 
-  const { title, content, author } = state;
+  const { title, author } = state;
 
   const inputValue = (name) => (e) => {
     setState({ ...state, [name]: e.target.value });
   };
 
   // console.log(title, content, author);
+
+  const submitContent = (e) => {
+    setContent(e);
+  };
+
+  const submitForm = (e) => {
+    e.preventDefault();
+    // console.log("API = ", process.env.REACT_APP_API);
+    axios
+      .post(`http://localhost:8002/api/create`, {
+        title,
+        content,
+        author,
+      })
+      .then((res) => {
+        Swal.fire("Great job!", "Submit Success", "success");
+        setState({ ...state, title: "", content: "", author: "" });
+      })
+      .catch((err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: `${err.response.data.error}!`,
+        });
+      });
+  };
+
   return (
     <div className="container p-5">
       <Navbar />
-      <h1>Articles</h1>
-      <form action="">
+      <h1>Article</h1>
+      <form onSubmit={submitForm}>
         <div className="form-group">
           <label>Title</label>
           <input
@@ -27,11 +58,7 @@ const Form = () => {
         </div>
         <div className="form-group">
           <label>Content</label>
-          <textarea
-            className="form-control"
-            value={content}
-            onChange={inputValue("content")}
-          />
+          <Wrapper />
         </div>
         <div className="form-group">
           <label>Author</label>
